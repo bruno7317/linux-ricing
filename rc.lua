@@ -10,6 +10,7 @@ require("awful.autofocus")
 local wibox = require("wibox")
 -- Theme handling library
 local beautiful = require("beautiful")
+local dpi    = require("beautiful.xresources").apply_dpi
 -- Notification library
 local naughty = require("naughty")
 local menubar = require("menubar")
@@ -552,24 +553,44 @@ end)
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 
--- Reload theme and re-apply it (for Pywal updates)
 awesome.connect_signal("theme::reload", function()
     local beautiful = require("beautiful")
     local gears = require("gears")
 
-    -- Re-load theme
     beautiful.init("/home/bruno/.config/awesome/zenburn/theme.lua")
 
-    -- Re-apply wallpaper to all screens
     for s in screen do
+        -- Re-apply wallpaper
         local wallpaper = beautiful.wallpaper
         if type(wallpaper) == "function" then
             wallpaper = wallpaper(s)
         end
         gears.wallpaper.maximized(wallpaper, s, true)
+
+        -- Re-apply taglist style (if you keep it as s.mytaglist)
+        if s.mytaglist then
+            s.mytaglist:set_visible(false)   -- remove from wibar
+            s.mytaglist:reset()              -- nix its children
+        end
+
+        s.mytaglist = awful.widget.taglist {
+            screen  = s,
+            filter  = awful.widget.taglist.filter.all,
+            buttons = taglist_buttons,
+            style   = {                       -- reads *new* colours
+                fg_focus    = beautiful.taglist_fg_focus,
+                bg_focus    = beautiful.taglist_bg_focus,
+                fg_occupied = beautiful.taglist_fg_occupied,
+                bg_occupied = beautiful.taglist_bg_occupied,
+                fg_empty    = beautiful.taglist_fg_empty,
+                bg_empty    = beautiful.taglist_bg_empty,
+                fg_urgent   = beautiful.taglist_fg_urgent,
+                bg_urgent   = beautiful.taglist_bg_urgent,
+            }
+        }
+
     end
 
-    -- Optionally: redraw wibars/widgets if needed
 end)
 
 -- }}}

@@ -53,14 +53,18 @@ theme.titlebar_bg_focus  = xrdb.color0 or "#3F3F3F"
 theme.titlebar_bg_normal = xrdb.color0 or "#3F3F3F"
 -- }}}
 
--- There are other variable sets
--- overriding the default one when
--- defined, the sets are:
--- [taglist|tasklist]_[bg|fg]_[focus|urgent|occupied|empty|volatile]
--- titlebar_[normal|focus]
--- tooltip_[font|opacity|fg_color|bg_color|border_width|border_color]
--- Example:
---theme.taglist_bg_focus = "#CC9393"
+-- {{{ Taglist colors
+theme.taglist_fg_focus    = xrdb.color7 or "#FFFFFF"
+theme.taglist_bg_focus    = xrdb.color1 or "#1E2320"
+
+theme.taglist_fg_urgent   = xrdb.color1 or "#CC9393"
+theme.taglist_bg_urgent   = xrdb.color8 or "#3F3F3F"
+
+theme.taglist_fg_occupied = xrdb.color7 or "#F0DFAF"
+theme.taglist_bg_occupied = xrdb.color0 or "#3F3F3F"
+
+theme.taglist_fg_empty    = xrdb.color5 or "#7F9F7F"
+theme.taglist_bg_empty    = xrdb.background or "#3F3F3F"
 -- }}}
 
 -- {{{ Widgets
