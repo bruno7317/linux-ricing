@@ -226,6 +226,18 @@ local function loadTheme()
     beautiful.init(THEME)
 end
 
+local function initWibox(s)
+    if s.mywibox then
+        s.mywibox.visible = false
+        s.mywibox = nil
+    end
+    s.mywibox = awful.wibar({
+        position = "top",
+        screen = s,
+
+    })
+end
+
 local function reloadTheme()
     loadTheme()
 
@@ -234,6 +246,7 @@ local function reloadTheme()
 
         buildTaglist(s)
 
+        initWibox(s)
         buildWibox(s)
     end
 end
@@ -265,10 +278,6 @@ local function setupErrorHandling()
             in_error = false
         end)
     end
-end
-
-local function initWibox(s)
-    s.mywibox = awful.wibar({ position = "top", screen = s })
 end
 
 local function setupScreens()

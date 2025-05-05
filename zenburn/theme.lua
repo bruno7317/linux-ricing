@@ -71,7 +71,10 @@ theme.bg_normal  = assign("background", "#3F3F3F")
 theme.bg_focus   = assign("color0",     "#1E2320")
 theme.bg_urgent  = assign("color8",     "#3F3F3F")
 
-theme.bg_systray = theme.bg_normal
+theme.bg_systray = assign("background", "#3F3F3F")
+
+theme.wibar_bg = assign("color4", "#3F3F3F")
+theme.wibar_fg = assign("background", "#FFFFFF")
 
 theme.useless_gap   = dpi(0)
 theme.border_width  = dpi(2)
