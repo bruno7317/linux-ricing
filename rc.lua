@@ -12,6 +12,9 @@ require("awful.hotkeys_popup.keys")
 
 local THEME = os.getenv("HOME") .. "/.config/awesome/zenburn/theme.lua"
 
+modkey = "Mod4"
+terminal = "alacritty"
+
 local function key(mod, key, action, desc, group)
     return awful.key(mod, key, action, { description = desc, group = group })
 end
@@ -143,6 +146,11 @@ local function updateTaglist(s)
     }
 end
 
+local function buildTaglist(s)
+    initTaglist(s)
+    updateTaglist(s)
+end
+
 local function createPromptbox(s)
     s.mypromptbox = awful.widget.prompt()
     return s.mypromptbox
@@ -221,11 +229,30 @@ local function setBorderColor(c, focused)
     end
 end
 
-local function reloadTheme()
+local function loadTheme()
     beautiful.init(THEME)
+end
+
+local function reloadTheme()
+    loadTheme()
+
     for s in screen do
         setWallpaper(s)
+
         updateTaglist(s)
+
+        if s.left_widgets and s.left_widgets[1] then
+            s.left_widgets[1] = s.mytaglist
+        end
+
+        if s.mywibox then
+            s.mywibox:setup {
+                layout = wibox.layout.align.horizontal,
+                s.left_widgets,
+                nil,
+                s.right_widgets,
+            }
+        end
     end
 end
 
@@ -235,42 +262,44 @@ local function setSignals()
     client.connect_signal("mouse::enter", focusClientOnMouseEnter)
     client.connect_signal("focus", function(c) setBorderColor(c, true) end)
     client.connect_signal("unfocus", function(c) setBorderColor(c, false) end)
+
+    screen.connect_signal("property::geometry", setWallpaper)
+
     awesome.connect_signal("theme::reload", reloadTheme)
 end
 
+local function setupErrorHandling()
+    if awesome.startup_errors then
+        notify_error(awesome.startup_errors)
+    end
 
-if awesome.startup_errors then
-    notify_error(awesome.startup_errors)
+    do
+        local in_error = false
+        awesome.connect_signal("debug::error", function (err)
+            if in_error then return end
+            in_error = true
+
+            notify_error(tostring(err))
+            in_error = false
+        end)
+    end
 end
 
-do
-    local in_error = false
-    awesome.connect_signal("debug::error", function (err)
-        if in_error then return end
-        in_error = true
-
-        notify_error(tostring(err))
-        in_error = false
+local function setupScreens()
+    awful.screen.connect_for_each_screen(function(s)
+        setWallpaper(s)
+        buildTaglist(s)
+        buildWibox(s)
     end)
 end
 
-beautiful.init(THEME)
+setupErrorHandling()
 
-modkey = "Mod4"
-terminal = "alacritty"
-editor = os.getenv("EDITOR") or "editor"
-editor_cmd = terminal .. " -e " .. editor
+loadTheme()
 
 setAvailableLayouts()
 
-screen.connect_signal("property::geometry", setWallpaper)
-
-awful.screen.connect_for_each_screen(function(s)
-    setWallpaper(s)
-    initTaglist(s)
-    updateTaglist(s)
-    buildWibox(s)
-end)
+setupScreens()
 
 setKeyboardShortcuts()
 

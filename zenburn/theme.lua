@@ -6,9 +6,48 @@
 local themes_path = require("gears.filesystem").get_themes_dir()
 local dpi = require("beautiful.xresources").apply_dpi
 
+local function get_xrdb_color(name)
+    local pipe = io.popen("xrdb -query")
+    if not pipe then
+        print("[XRDB] Failed to open pipe")
+        return nil
+    end
+
+    local preferred, fallback = nil, nil
+
+    for line in pipe:lines() do
+        local key, val = line:match("^(%*%.[%w]+):%s*(#%x+)")
+        if key and key == "*." .. name then
+            fallback = val
+        else
+            key, val = line:match("^(%*[%w]+):%s*(#%x+)")
+            if key and key == "*" .. name then
+                preferred = val
+            end
+        end
+    end
+
+    if preferred then
+        print(string.format("[XRDB] %s = %s (preferred)", name, preferred))
+        return preferred
+    elseif fallback then
+        print(string.format("[XRDB] %s = %s (fallback)", name, fallback))
+        return fallback
+    else
+        print(string.format("[XRDB] %s not found", name))
+        return nil
+    end
+end
+
+local function assign(name, fallback)
+    local val = get_xrdb_color(name) or fallback
+    print(string.format("[THEME] %s = %s", name, val))
+    return val
+end
+
+
 -- {{{ Main
 local theme = {}
--- Use Pywal's last wallpaper if present
 local wallpaper = os.getenv("HOME") .. "/.cache/wal/wall.png"
 local f = io.open(wallpaper, "r")
 if f ~= nil then
@@ -23,63 +62,38 @@ end
 -- {{{ Styles
 theme.font      = "sans 14"
 
--- Load Pywal colors from Xresources, if available
-local xresources = require("beautiful.xresources")
-local xrdb = xresources.get_current_theme()
-
 -- {{{ Colors
-theme.fg_normal  = xrdb.foreground  or "#DCDCCC"
-theme.fg_focus   = xrdb.color7      or "#F0DFAF"
-theme.fg_urgent  = xrdb.color1      or "#CC9393"
+theme.fg_normal  = assign("foreground", "#DCDCCC")
+theme.fg_focus   = assign("color7",     "#F0DFAF")
+theme.fg_urgent  = assign("color1",     "#CC9393")
 
-theme.bg_normal  = xrdb.background  or "#3F3F3F"
-theme.bg_focus   = xrdb.color0      or "#1E2320"
-theme.bg_urgent  = xrdb.color8      or "#3F3F3F"
+theme.bg_normal  = assign("background", "#3F3F3F")
+theme.bg_focus   = assign("color0",     "#1E2320")
+theme.bg_urgent  = assign("color8",     "#3F3F3F")
 
 theme.bg_systray = theme.bg_normal
--- }}}
 
--- {{{ Borders
 theme.useless_gap   = dpi(0)
 theme.border_width  = dpi(2)
 
-theme.border_normal = xrdb.color0   or "#3F3F3F"
-theme.border_focus  = xrdb.color2   or "#6F6F6F"
-theme.border_marked = xrdb.color1   or "#CC9393"
--- }}}
+theme.border_normal = assign("color0", "#3F3F3F")
+theme.border_focus  = assign("color2", "#6F6F6F")
+theme.border_marked = assign("color1", "#CC9393")
 
--- {{{ Titlebars
-theme.titlebar_bg_focus  = xrdb.color0 or "#3F3F3F"
-theme.titlebar_bg_normal = xrdb.color0 or "#3F3F3F"
--- }}}
+theme.titlebar_bg_focus  = assign("color0", "#3F3F3F")
+theme.titlebar_bg_normal = assign("color0", "#3F3F3F")
 
--- {{{ Taglist colors
-theme.taglist_fg_focus    = xrdb.color7 or "#FFFFFF"
-theme.taglist_bg_focus    = xrdb.color1 or "#1E2320"
+theme.taglist_fg_focus    = assign("color7",     "#FFFFFF")
+theme.taglist_bg_focus    = assign("color1",     "#1E2320")
+theme.taglist_fg_urgent   = assign("color1",     "#CC9393")
+theme.taglist_bg_urgent   = assign("color8",     "#3F3F3F")
+theme.taglist_fg_occupied = assign("color7",     "#F0DFAF")
+theme.taglist_bg_occupied = assign("color0",     "#3F3F3F")
+theme.taglist_fg_empty    = assign("color5",     "#7F9F7F")
+theme.taglist_bg_empty    = assign("background", "#3F3F3F")
 
-theme.taglist_fg_urgent   = xrdb.color1 or "#CC9393"
-theme.taglist_bg_urgent   = xrdb.color8 or "#3F3F3F"
+theme.mouse_finder_color = assign("color4", "#CC9393")
 
-theme.taglist_fg_occupied = xrdb.color7 or "#F0DFAF"
-theme.taglist_bg_occupied = xrdb.color0 or "#3F3F3F"
-
-theme.taglist_fg_empty    = xrdb.color5 or "#7F9F7F"
-theme.taglist_bg_empty    = xrdb.background or "#3F3F3F"
--- }}}
-
--- {{{ Widgets
--- You can add as many variables as
--- you wish and access them by using
--- beautiful.variable in your rc.lua
---theme.fg_widget        = "#AECF96"
---theme.fg_center_widget = "#88A175"
---theme.fg_end_widget    = "#FF5656"
---theme.bg_widget        = "#494B4F"
---theme.border_widget    = "#3F3F3F"
--- }}}
-
--- {{{ Mouse finder
-theme.mouse_finder_color = xrdb.color4 or "#CC9393"
 -- mouse_finder_[timeout|animate_timeout|radius|factor]
 -- }}}
 
