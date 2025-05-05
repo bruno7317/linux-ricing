@@ -138,17 +138,12 @@ local function initTaglist(s)
     awful.tag({ "1", "2", "3", "4" }, s, awful.layout.layouts[1])
 end
 
-local function updateTaglist(s)
+local function buildTaglist(s)
     s.mytaglist = awful.widget.taglist {
         screen  = s,
         filter  = awful.widget.taglist.filter.all,
         buttons = createTaglistButtons()
     }
-end
-
-local function buildTaglist(s)
-    initTaglist(s)
-    updateTaglist(s)
 end
 
 local function createPromptbox(s)
@@ -157,8 +152,6 @@ local function createPromptbox(s)
 end
 
 local function buildWibox(s)
-    s.mywibox = awful.wibar({ position = "top", screen = s })
-
     s.left_widgets = {
         layout = wibox.layout.fixed.horizontal,
         s.mytaglist,
@@ -239,20 +232,9 @@ local function reloadTheme()
     for s in screen do
         setWallpaper(s)
 
-        updateTaglist(s)
+        buildTaglist(s)
 
-        if s.left_widgets and s.left_widgets[1] then
-            s.left_widgets[1] = s.mytaglist
-        end
-
-        if s.mywibox then
-            s.mywibox:setup {
-                layout = wibox.layout.align.horizontal,
-                s.left_widgets,
-                nil,
-                s.right_widgets,
-            }
-        end
+        buildWibox(s)
     end
 end
 
@@ -285,10 +267,18 @@ local function setupErrorHandling()
     end
 end
 
+local function initWibox(s)
+    s.mywibox = awful.wibar({ position = "top", screen = s })
+end
+
 local function setupScreens()
     awful.screen.connect_for_each_screen(function(s)
         setWallpaper(s)
+
+        initTaglist(s)
         buildTaglist(s)
+
+        initWibox(s)
         buildWibox(s)
     end)
 end
