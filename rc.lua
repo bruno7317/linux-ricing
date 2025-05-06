@@ -13,11 +13,11 @@ require("awful.hotkeys_popup.keys")
 local THEME = os.getenv("HOME") .. "/.config/awesome/zenburn/theme.lua"
 
 modkey = "Mod4"
-terminal = "alacritty"
+terminal = "gnome-terminal"
 
 local dpi           = require("beautiful.xresources").apply_dpi
-local GAP           = dpi(10)   --  gap between everything and the screen edge
-local BAR_HEIGHT    = dpi(40)   --  visible height of the bar itself
+local GAP           = dpi(10)
+local BAR_HEIGHT    = dpi(40)
 local BORDER_RADIUS = dpi(8)
 
 
