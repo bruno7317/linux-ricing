@@ -60,7 +60,9 @@ local function setKeyboardShortcuts()
         key({}, "XF86AudioRaiseVolume", function () awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ +3%") end, "increase volume", "media"),
         key({}, "XF86AudioLowerVolume", function () awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ -3%") end, "decrease volume", "media"),
         key({}, "XF86AudioMute", function () awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle") end, "mute volume", "media"),
-        key({modkey}, "F5", function() awful.spawn.with_shell("~/.config/awesome/zenburn/cycle_wallpaper.sh") end, "cycle theme", "awesome")
+        key({modkey}, "F5", function() awful.spawn.with_shell("~/.config/awesome/zenburn/cycle_wallpaper.sh") end, "cycle theme", "awesome"),
+        key({modkey}, "l", function () awful.spawn("slock") end, "lock screen", "awesome")
+
     )
     for i = 1, 9 do
         globalkeys = gears.table.join(globalkeys,
