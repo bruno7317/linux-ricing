@@ -15,6 +15,12 @@ local THEME = os.getenv("HOME") .. "/.config/awesome/zenburn/theme.lua"
 modkey = "Mod4"
 terminal = "alacritty"
 
+local dpi           = require("beautiful.xresources").apply_dpi
+local GAP           = dpi(10)   --  gap between everything and the screen edge
+local BAR_HEIGHT    = dpi(40)   --  visible height of the bar itself
+local BORDER_RADIUS = dpi(8)
+
+
 local function key(mod, key, action, desc, group)
     return awful.key(mod, key, action, { description = desc, group = group })
 end
@@ -153,28 +159,63 @@ local function createPromptbox(s)
     return s.mypromptbox
 end
 
-local function initWibox(s)
-    if s.mywibox then
-        s.mywibox.visible = false
-        s.mywibox = nil
-    end
-    s.mywibox = awful.wibar({
-        position = "top",
-        screen = s
+local function initGapBar(s)
+    --------------------------------------------------------------------
+    --  Reserve outer gap + bar height
+    --------------------------------------------------------------------
+    awful.screen.padding(s, {
+        top    = 2*GAP + BAR_HEIGHT,
+        left   = GAP,
+        right  = GAP,
+        bottom = GAP,
     })
-end
 
-local function buildWibox(s)
+    --------------------------------------------------------------------
+    --  Create the bar (note the geometry block!)
+    --------------------------------------------------------------------
+    s.mywibox = wibox {
+        screen  = s,
+        height  = BAR_HEIGHT,
+        bg      = beautiful.bg_normal,
+        visible = true,
+        shape = function(cr, w, h)
+            gears.shape.rounded_rect(cr, w, h, BORDER_RADIUS)
+        end
+    }
+
+    -- Absolute positioning that respects multi‑head offsets
+    s.mywibox:geometry({
+        x      = s.geometry.x + GAP,
+        y      = s.geometry.y + GAP,
+        width  = s.geometry.width - 2 * GAP,
+        height = BAR_HEIGHT,
+    })
+
+    -- Keep it in place if the monitor layout changes
+    s:connect_signal("property::geometry", function()
+        s.mywibox:geometry({
+            x      = s.geometry.x + GAP,
+            y      = s.geometry.y + GAP,
+            width  = s.geometry.width - 2 * GAP,
+            height = BAR_HEIGHT,
+        })
+    end)
+
+    --------------------------------------------------------------------
+    --  Widgets (unchanged)
+    --------------------------------------------------------------------
+    s.mypromptbox = awful.widget.prompt()
+
     s.left_widgets = {
         layout = wibox.layout.fixed.horizontal,
         s.mytaglist,
-        createPromptbox(s),
+        s.mypromptbox,
     }
-    
+
     s.right_widgets = {
         layout = wibox.layout.fixed.horizontal,
         wibox.widget.systray(),
-        wibox.widget.textclock()
+        wibox.widget.textclock(),
     }
 
     s.mywibox:setup {
@@ -186,6 +227,10 @@ local function buildWibox(s)
 end
 
 local function preventOffscreenOnStartup(c)
+    c.shape = function(cr, w, h)
+        gears.shape.rounded_rect(cr, w, h, BORDER_RADIUS)
+    end
+
     if awesome.startup
         and not c.size_hints.user_position
         and not c.size_hints.program_position
@@ -247,8 +292,7 @@ local function reloadTheme()
 
         buildTaglist(s)
 
-        initWibox(s)
-        buildWibox(s)
+        initGapBar(s)
     end
 end
 
@@ -284,20 +328,21 @@ end
 local function setupScreens()
     awful.screen.connect_for_each_screen(function(s)
 
-        local screen_border = 20
-        s.padding = {
-            top = screen_border,
-            bottom = screen_border,
-            left = screen_border,
-            right = screen_border
-        }
+        -- local screen_border = 20
+        -- s.padding = {
+        --     top = screen_border,
+        --     bottom = screen_border,
+        --     left = screen_border,
+        --     right = screen_border
+        -- }
         setWallpaper(s)
 
         initTaglist(s)
         buildTaglist(s)
 
-        initWibox(s)
-        buildWibox(s)
+        createPromptbox(s)
+
+        initGapBar(s)
     end)
 end
 
