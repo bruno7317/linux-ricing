@@ -153,13 +153,24 @@ local function createPromptbox(s)
     return s.mypromptbox
 end
 
+local function initWibox(s)
+    if s.mywibox then
+        s.mywibox.visible = false
+        s.mywibox = nil
+    end
+    s.mywibox = awful.wibar({
+        position = "top",
+        screen = s
+    })
+end
+
 local function buildWibox(s)
     s.left_widgets = {
         layout = wibox.layout.fixed.horizontal,
         s.mytaglist,
         createPromptbox(s),
     }
-
+    
     s.right_widgets = {
         layout = wibox.layout.fixed.horizontal,
         wibox.widget.systray(),
@@ -228,18 +239,6 @@ local function loadTheme()
     beautiful.init(THEME)
 end
 
-local function initWibox(s)
-    if s.mywibox then
-        s.mywibox.visible = false
-        s.mywibox = nil
-    end
-    s.mywibox = awful.wibar({
-        position = "top",
-        screen = s,
-
-    })
-end
-
 local function reloadTheme()
     loadTheme()
 
@@ -284,6 +283,14 @@ end
 
 local function setupScreens()
     awful.screen.connect_for_each_screen(function(s)
+
+        local screen_border = 20
+        s.padding = {
+            top = screen_border,
+            bottom = screen_border,
+            left = screen_border,
+            right = screen_border
+        }
         setWallpaper(s)
 
         initTaglist(s)
