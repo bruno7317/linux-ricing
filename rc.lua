@@ -144,6 +144,11 @@ end
 
 local function initTaglist(s)
     awful.tag({ "1", "2", "3", "4" }, s, awful.layout.layouts[1])
+
+    for _, t in ipairs(s.tags) do
+        t.gap               = GAP
+        t.gap_single_client = true
+    end
 end
 
 local function buildTaglist(s)
@@ -165,9 +170,9 @@ local function initGapBar(s)
     --------------------------------------------------------------------
     awful.screen.padding(s, {
         top    = 2*GAP + BAR_HEIGHT,
-        left   = GAP,
-        right  = GAP,
-        bottom = GAP,
+        left   = 0,
+        right  = 0,
+        bottom = 0,
     })
 
     --------------------------------------------------------------------
@@ -176,18 +181,15 @@ local function initGapBar(s)
     s.mywibox = wibox {
         screen  = s,
         height  = BAR_HEIGHT,
-        bg      = beautiful.bg_normal,
         visible = true,
-        shape = function(cr, w, h)
-            gears.shape.rounded_rect(cr, w, h, BORDER_RADIUS)
-        end
+        shape = function(cr, w, h) gears.shape.rounded_rect(cr, w, h, BORDER_RADIUS) end
     }
 
     -- Absolute positioning that respects multi‑head offsets
     s.mywibox:geometry({
-        x      = s.geometry.x + GAP,
-        y      = s.geometry.y + GAP,
-        width  = s.geometry.width - 2 * GAP,
+        x      = s.geometry.x + 2*GAP,
+        y      = s.geometry.y + 2*GAP,
+        width  = s.geometry.width - 4 * GAP,
         height = BAR_HEIGHT,
     })
 
