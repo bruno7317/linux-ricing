@@ -5,6 +5,7 @@
 
 local themes_path = require("gears.filesystem").get_themes_dir()
 local dpi = require("beautiful.xresources").apply_dpi
+local BORDER_WIDTH = dpi(2)
 
 local function get_xrdb_color(name)
     local pipe = io.popen("xrdb -query")
@@ -75,11 +76,11 @@ theme.bg_systray = assign("background", "#3F3F3F")
 
 theme.wibar_bg = assign("color4", "#3F3F3F")
 theme.wibar_fg = assign("background", "#FFFFFF")
-theme.wibar_border_width = dpi(2)
+theme.wibar_border_width = BORDER_WIDTH
 theme.wibar_border_color = assign("color7", "#3F3F3F")
 
 theme.useless_gap   = dpi(0)
-theme.border_width  = dpi(2)
+theme.border_width  = BORDER_WIDTH
 
 theme.border_normal = assign("color7", "#3F3F3F")
 theme.border_focus  = assign("color2", "#6F6F6F")

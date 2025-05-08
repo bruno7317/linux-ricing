@@ -192,16 +192,16 @@ local function initGapBar(s)
     s.mywibox:geometry({
         x      = s.geometry.x + 2*GAP,
         y      = s.geometry.y + 2*GAP,
-        width  = s.geometry.width - 4 * GAP,
+        width  = s.geometry.width - 4 * GAP - 2*dpi(2),
         height = BAR_HEIGHT,
     })
 
     -- Keep it in place if the monitor layout changes
     s:connect_signal("property::geometry", function()
         s.mywibox:geometry({
-            x      = s.geometry.x + GAP,
-            y      = s.geometry.y + GAP,
-            width  = s.geometry.width - 2 * GAP,
+            x      = s.geometry.x + 2*GAP,
+            y      = s.geometry.y + 2*GAP,
+            width  = s.geometry.width - 4 * GAP - 2*dpi(20),
             height = BAR_HEIGHT,
         })
     end)
