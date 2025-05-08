@@ -4,6 +4,7 @@ local gears = require("gears")
 local awful = require("awful")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
+package.loaded["naughty.dbus"] = {}
 local naughty = require("naughty")
 local hotkeys_popup = require("awful.hotkeys_popup")
 
@@ -17,8 +18,8 @@ terminal = "gnome-terminal"
 
 local dpi           = require("beautiful.xresources").apply_dpi
 local GAP           = dpi(10)
-local BAR_HEIGHT    = dpi(40)
-local BORDER_RADIUS = dpi(8)
+local BAR_HEIGHT    = dpi(50)
+local BORDER_RADIUS = dpi(15)
 
 
 local function key(mod, key, action, desc, group)
@@ -67,7 +68,7 @@ local function setKeyboardShortcuts()
         key({}, "XF86AudioLowerVolume", function () awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ -3%") end, "decrease volume", "media"),
         key({}, "XF86AudioMute", function () awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle") end, "mute volume", "media"),
         key({modkey}, "F5", function() awful.spawn.with_shell("~/.config/awesome/zenburn/cycle_wallpaper.sh") end, "cycle theme", "awesome"),
-        key({modkey}, "l", function () awful.spawn("slock") end, "lock screen", "awesome")
+        key({modkey}, "l", function () awful.spawn("betterlockscreen -l dimblur") end, "lock screen", "awesome")
 
     )
     for i = 1, 9 do
@@ -182,7 +183,9 @@ local function initGapBar(s)
         screen  = s,
         height  = BAR_HEIGHT,
         visible = true,
-        shape = function(cr, w, h) gears.shape.rounded_rect(cr, w, h, BORDER_RADIUS) end
+        shape = function(cr, w, h) gears.shape.rounded_rect(cr, w, h, BORDER_RADIUS) end,
+        border_width = beautiful.wibar_border_width,
+        border_color = beautiful.wibar_border_color
     }
 
     -- Absolute positioning that respects multi‑head offsets
@@ -216,7 +219,6 @@ local function initGapBar(s)
 
     s.right_widgets = {
         layout = wibox.layout.fixed.horizontal,
-        wibox.widget.systray(),
         wibox.widget.textclock(),
     }
 
@@ -330,13 +332,6 @@ end
 local function setupScreens()
     awful.screen.connect_for_each_screen(function(s)
 
-        -- local screen_border = 20
-        -- s.padding = {
-        --     top = screen_border,
-        --     bottom = screen_border,
-        --     left = screen_border,
-        --     right = screen_border
-        -- }
         setWallpaper(s)
 
         initTaglist(s)

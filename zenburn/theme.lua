@@ -60,7 +60,7 @@ end
 -- }}}
 
 -- {{{ Styles
-theme.font      = "sans 14"
+theme.font = "Ubuntu Mono Bold 16"
 
 -- {{{ Colors
 theme.fg_normal  = assign("foreground", "#DCDCCC")
@@ -75,11 +75,13 @@ theme.bg_systray = assign("background", "#3F3F3F")
 
 theme.wibar_bg = assign("color4", "#3F3F3F")
 theme.wibar_fg = assign("background", "#FFFFFF")
+theme.wibar_border_width = dpi(2)
+theme.wibar_border_color = assign("color7", "#3F3F3F")
 
 theme.useless_gap   = dpi(0)
 theme.border_width  = dpi(2)
 
-theme.border_normal = assign("color0", "#3F3F3F")
+theme.border_normal = assign("color7", "#3F3F3F")
 theme.border_focus  = assign("color2", "#6F6F6F")
 theme.border_marked = assign("color1", "#CC9393")
 
