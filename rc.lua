@@ -7,6 +7,7 @@ local beautiful = require("beautiful")
 package.loaded["naughty.dbus"] = {}
 local naughty = require("naughty")
 local hotkeys_popup = require("awful.hotkeys_popup")
+local weather_widget = require("weather")
 
 require("awful.autofocus")
 require("awful.hotkeys_popup.keys")
@@ -219,6 +220,7 @@ local function initGapBar(s)
 
     s.right_widgets = {
         layout = wibox.layout.fixed.horizontal,
+        weather_widget,
         wibox.widget.textclock(),
     }
 
