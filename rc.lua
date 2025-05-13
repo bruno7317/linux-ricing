@@ -108,6 +108,25 @@ end
 local function setRules()
     awful.rules.rules = {
         {
+            rule_any = {
+                class = { "Steam", "steamwebhelper" }
+            },
+            properties = {
+                border_width = beautiful.border_width,
+                border_color = beautiful.border_normal,
+                focus = awful.client.focus.filter,
+                raise = true,
+                keys = createClientKeys(),
+                screen = awful.screen.preferred,
+                placement = awful.placement.no_overlap+awful.placement.no_offscreen,
+                floating = false,
+                size_hints_honor = false,
+                maximized = false,
+                maximized_horizontal = false,
+                maximized_vertical = false
+            }
+        },
+        {
             rule = { },
             properties = {
                 border_width = beautiful.border_width,

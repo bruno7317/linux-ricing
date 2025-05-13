@@ -27,5 +27,3 @@ alacritty msg config -r 2>/dev/null || touch "$HOME/.config/alacritty/alacritty.
 
 # 5️⃣  tell Awesome to repaint
 awesome-client "awesome.emit_signal('theme::reload')"
-
-notify-send "🌄 Wallpaper Updated" "Colors synced at $(date +%H:%M)"

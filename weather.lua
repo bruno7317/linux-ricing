@@ -4,6 +4,7 @@ local http  = require("socket.http")
 local json  = require("dkjson")
 local gears = require("gears")
 local wibox = require("wibox")
+local fs    = gears.filesystem
 
 ------------------------------------------------------------
 -- Config
@@ -13,59 +14,66 @@ if not api_key or api_key == "" then
     return wibox.widget.textbox("No API key")
 end
 
-local city = "Calgary"
+local city  = "Calgary"
 local units = "metric"  -- or "imperial"
+
 local url = string.format(
     "https://api.openweathermap.org/data/2.5/weather?q=%s&units=%s&appid=%s",
     city, units, api_key
 )
 
 ------------------------------------------------------------
--- Wind direction → arrow
+-- Background image mapping
 ------------------------------------------------------------
-local function wind_arrow(deg)
-    if not deg then return "·" end
-    local arrows = { "↑", "↗", "→", "↘", "↓", "↙", "←", "↖" }
-    local index = math.floor(((deg + 22.5) % 360) / 45) + 1
-    return arrows[index]
+local images_dir = fs.get_configuration_dir() .. "weather_images/"
+local default_bg = images_dir .. "default.jpg"  -- fallback image
+
+local function file_exists(path)
+    local f = io.open(path, "r")
+    if f then f:close() end
+    return f ~= nil
+end
+
+local function icon_to_image(icon_code)
+    local path = images_dir .. icon_code .. ".jpg"
+    if file_exists(path) then
+        return path
+    else
+        return default_bg
+    end
 end
 
 ------------------------------------------------------------
--- Weather icon code → emoji
-------------------------------------------------------------
-local icon_map = {
-    ["01d"] = "☀️", ["01n"] = "🌙",
-    ["02d"] = "🌤", ["02n"] = "🌤",
-    ["03d"] = "⛅", ["03n"] = "⛅",
-    ["04d"] = "☁️", ["04n"] = "☁️",
-    ["09d"] = "🌧", ["09n"] = "🌧",
-    ["10d"] = "🌦", ["10n"] = "🌧",
-    ["11d"] = "🌩", ["11n"] = "🌩",
-    ["13d"] = "❄️", ["13n"] = "❄️",
-    ["50d"] = "🌫", ["50n"] = "🌫"
-}
-
-------------------------------------------------------------
--- Widget setup
+-- Widgets
 ------------------------------------------------------------
 local weather_text = wibox.widget {
     widget = wibox.widget.textbox,
     align  = "center",
     valign = "center",
-    font   = "Ubuntu Mono Bold 16"
+    font   = "Iosevka Nerd Font Bold 14"
+}
+
+local bg_image = wibox.widget {
+    id         = "bg",
+    widget     = wibox.widget.imagebox,
+    resize     = true,
+    clip_shape = gears.shape.rounded_bar
 }
 
 local weather_widget = wibox.widget {
     {
-        weather_text,
-        left   = 10,
-        right  = 10,
-        top    = 5,
-        bottom = 5,
-        widget = wibox.container.margin
+        layout = wibox.layout.stack,
+        bg_image,
+        {
+            weather_text,
+            left   = 10,
+            right  = 10,
+            top    = 5,
+            bottom = 5,
+            widget = wibox.container.margin
+        }
     },
     shape  = gears.shape.rounded_bar,
-    bg     = "#282a36AA", -- semi-transparent dark background
     widget = wibox.container.background
 }
 
@@ -85,22 +93,17 @@ local function update_weather()
         return
     end
 
-    local temp     = data.main.temp or 0
-    local wind_ms  = data.wind and data.wind.speed or 0
-    local wind_deg = data.wind and data.wind.deg or 0
-    local wind_kmh = math.floor(wind_ms * 3.6 + 0.5)
+    local feels_like = data.main.feels_like or 0
+    local wind_ms    = data.wind and data.wind.speed or 0
+    local wind_kmh   = math.floor(wind_ms * 3.6 + 0.5)
 
     local icon_code = data.weather[1].icon or ""
-    local icon      = icon_map[icon_code] or "❔"
-    local arrow     = wind_arrow(wind_deg)
+    bg_image.image = icon_to_image(icon_code)
 
     weather_text.markup = string.format(
-        "<span foreground='#f1fa8c'>%s</span> " ..
         "<span foreground='#ffb86c'>%d°C</span>  " ..
-        "<span foreground='#8be9fd'>%s %dkm/h</span>",
-        icon,
-        math.floor(temp + 0.5),
-        arrow,
+        "<span foreground='#8be9fd'>%dkm/h</span>",
+        math.floor(feels_like + 0.5),
         wind_kmh
     )
 end
