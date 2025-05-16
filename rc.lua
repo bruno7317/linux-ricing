@@ -7,7 +7,7 @@ local beautiful = require("beautiful")
 package.loaded["naughty.dbus"] = {}
 local naughty = require("naughty")
 local hotkeys_popup = require("awful.hotkeys_popup")
-local weather_factory = require("weather")
+local weather_widget = require("weather")()
 
 require("awful.autofocus")
 require("awful.hotkeys_popup.keys")
@@ -185,26 +185,7 @@ local function createPromptbox(s)
     return s.mypromptbox
 end
 
-local weather_widget
-local weather
-
-local function initWeatherWidget()
-    weather = weather_factory {
-        text = beautiful.bg_focus,
-        bg   = beautiful.fg_focus .. "AA",
-    }
-    weather_widget = weather.widget
-end
-
-local function refreshWeatherWidget()
-    weather.refresh {
-        text = beautiful.bg_focus,
-        bg   = beautiful.fg_focus .. "AA",
-    }
-end
-
 local function initGapBar(s)
-    initWeatherWidget()
     --------------------------------------------------------------------
     --  Reserve outer gap + bar height
     --------------------------------------------------------------------
@@ -338,7 +319,6 @@ local function reloadTheme()
 
         initGapBar(s)
     end
-    refreshWeatherWidget()
 end
 
 local function setSignals()

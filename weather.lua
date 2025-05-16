@@ -1,12 +1,18 @@
-local http  = require("socket.http")
-local json  = require("dkjson")
-local gears = require("gears")
-local wibox = require("wibox")
-local dpi   = require("beautiful.xresources").apply_dpi
+local http      = require("socket.http")
+local json      = require("dkjson")
+local gears     = require("gears")
+local wibox     = require("wibox")
+local dpi       = require("beautiful.xresources").apply_dpi
+local beautiful = require("beautiful")
+
+local THEME = os.getenv("HOME") .. "/.config/awesome/zenburn/theme.lua"
+beautiful.init(THEME)
 
 local api_key = os.getenv("OPENWEATHER_API_KEY")
 if not api_key or api_key == "" then
-    return function() return { widget = wibox.widget.textbox("No API key") } end
+    return function()
+        return wibox.widget.textbox("No API key")
+    end
 end
 
 local city, units = "Calgary", "metric"
@@ -15,22 +21,14 @@ local url = string.format(
     city, units, api_key
 )
 
-------------------------------------------------------------
---  Factory
-------------------------------------------------------------
-return function(opts)
-    opts = opts or {}
-    local text_color = opts.text  or "#FFFFFF"
-    local bg_color   = opts.bg    or "#000000AA"
+return function()
+    local feels_like, wind_kmh = 0, 0
 
-    --------------------------------------------------------
-    -- Widgets
-    --------------------------------------------------------
     local weather_text = wibox.widget {
         widget = wibox.widget.textbox,
         align  = "center",
         valign = "center",
-        font   = opts.font or "Ubuntu Mono Bold 16",
+        font   = beautiful.font or "Ubuntu Mono Bold 16",
     }
 
     local weather_widget = wibox.widget {
@@ -39,24 +37,21 @@ return function(opts)
             margins = dpi(6),
             widget  = wibox.container.margin,
         },
-        bg           = bg_color,
+        bg           = beautiful.fg_focus .. "AA",
         shape        = gears.shape.rounded_bar,
         widget       = wibox.container.background,
         forced_width = dpi(180),
         forced_height= dpi(36),
     }
 
-    --------------------------------------------------------
-    -- State + helpers
-    --------------------------------------------------------
-    local feels_like, wind_kmh = 0, 0
     local function redraw()
+        beautiful.init(THEME)
         weather_text.markup = string.format(
-            "<span foreground='%s'>%d°C</span>   " ..
-            "<span foreground='%s'>%dkm/h</span>",
-            text_color, feels_like, text_color, wind_kmh
+            "<span foreground='%s'>%d°C</span>   <span foreground='%s'>%dkm/h</span>",
+            beautiful.bg_focus, feels_like,
+            beautiful.bg_focus, wind_kmh
         )
-        weather_widget.bg = bg_color
+        weather_widget.bg = beautiful.fg_focus .. "AA"
     end
 
     local function update_weather()
@@ -71,7 +66,6 @@ return function(opts)
         redraw()
     end
 
-    -- Start timer
     gears.timer {
         timeout   = 900,
         autostart = true,
@@ -79,17 +73,8 @@ return function(opts)
         callback  = update_weather,
     }
 
-    --------------------------------------------------------
-    -- Public API
-    --------------------------------------------------------
-    local function refresh(new_opts)
-        if new_opts then
-            text_color = new_opts.text or text_color
-            bg_color   = new_opts.bg   or bg_color
-        end
-        redraw()
-    end
+    awesome.connect_signal("theme::reload", redraw)
 
-    redraw()  -- initial draw
-    return { widget = weather_widget, refresh = refresh }
+    redraw()
+    return weather_widget
 end
