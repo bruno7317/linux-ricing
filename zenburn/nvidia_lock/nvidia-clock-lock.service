@@ -1,0 +1,14 @@
+[Unit]
+Description=Set NVIDIA GPU clock limits
+After=graphical.target
+Requires=graphical.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/nvidia-clock-lock.sh
+StandardOutput=append:/var/log/nvidia-clock-lock.log
+StandardError=append:/var/log/nvidia-clock-lock.log
+RemainAfterExit=true
+
+[Install]
+WantedBy=graphical.target
