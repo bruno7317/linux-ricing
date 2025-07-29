@@ -127,6 +127,16 @@ local function setRules()
             }
         },
         {
+            rule = {
+                class = "steam_app_261550",
+                name = "M&B II: Bannerlord",
+            },
+            properties = {
+                floating = true,
+                size_hints_honor = true,
+            }
+        },
+        {
             rule = { },
             properties = {
                 border_width = beautiful.border_width,
