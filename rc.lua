@@ -31,6 +31,34 @@ local function notify_error(message)
     naughty.notify({ preset = naughty.config.presets.critical, title = "Error!", text = message })
 end
 
+-- --------------------------------------------------------------------
+--  Simple file logger  ( ~/.cache/awesome/client_debug.log )
+-- --------------------------------------------------------------------
+local log_path = gears.filesystem.get_cache_dir() .. "client_debug.log"
+
+local function log(fmt, ...)
+    local message = os.date("[%Y-%m-%d %H:%M:%S] ") .. string.format(fmt, ...)
+    local f, err = io.open(log_path, "a")
+
+    if f then
+        f:write(message .. "\n")
+        f:close()
+    else
+        local fallback = "[AWESOME LOG FAIL] " .. message .. " (reason: " .. tostring(err) .. ")"
+        io.stderr:write(fallback .. "\n")
+
+        if naughty then
+            naughty.notify({
+                preset = naughty.config.presets.critical,
+                title = "Logging Failed",
+                text = fallback
+            })
+        end
+    end
+end
+
+log("~~~ Awesome starting (rc.lua reloaded) ~~~")
+
 local function setAvailableLayouts()
     awful.layout.layouts = {
         awful.layout.suit.spiral
@@ -127,16 +155,6 @@ local function setRules()
             }
         },
         {
-            rule = {
-                class = "steam_app_261550",
-                name = "M&B II: Bannerlord",
-            },
-            properties = {
-                floating = true,
-                size_hints_honor = true,
-            }
-        },
-        {
             rule = { },
             properties = {
                 border_width = beautiful.border_width,
@@ -151,6 +169,16 @@ local function setRules()
                 maximized = false,
                 maximized_horizontal = false,
                 maximized_vertical = false
+            }
+        },
+        {
+            rule = {
+                class = "steam_app_261550",
+                name = "M&B II: Bannerlord",
+            },
+            properties = {
+                floating = true,
+                size_hints_honor = true,
             }
         },
         {
@@ -272,6 +300,34 @@ local function initGapBar(s)
 end
 
 local function preventOffscreenOnStartup(c)
+    ---------------- basic info ----------------
+    log("manage: class=%s | name=%s | inst=%s | type=%s",
+        tostring(c.class), tostring(c.name),
+        tostring(c.instance), tostring(c.type))
+
+    ------------- rule-matching info -----------
+    for idx, rule in ipairs(awful.rules.rules) do
+        local matched = false
+
+        -- explicit rule = { ... }
+        if rule.rule and awful.rules.match(c, rule.rule) then
+            matched = true
+        end
+        -- rule_any = { class = {...}, name = {...}, … }
+        if not matched and rule.rule_any then
+            for prop, val in pairs(rule.rule_any) do
+                if awful.rules.match_any(c, { [prop] = val }) then
+                    matched = true
+                    break
+                end
+            end
+        end
+
+        if matched then
+            log("  -> matched rule #%d", idx)
+        end
+    end
+
     c.shape = function(cr, w, h)
         gears.shape.rounded_rect(cr, w, h, BORDER_RADIUS)
     end
@@ -348,6 +404,14 @@ local function setSignals()
     client.connect_signal("focus", function(c) setBorderColor(c, true) end)
     client.connect_signal("unfocus", function(c) setBorderColor(c, false) end)
 
+    -- log when floating/maximized toggles
+    client.connect_signal("property::floating", function(c)
+        log("floating changed: %s -> %s", tostring(c.name), tostring(c.floating))
+    end)
+    client.connect_signal("property::maximized", function(c)
+        log("maximized changed: %s -> %s", tostring(c.name), tostring(c.maximized))
+    end)
+
     screen.connect_signal("property::geometry", setWallpaper)
 
     awesome.connect_signal("theme::reload", reloadTheme)
@@ -397,3 +461,5 @@ setKeyboardShortcuts()
 setRules()
 
 setSignals()
+
+log("Awesome restarted successfully")
